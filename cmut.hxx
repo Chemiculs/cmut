@@ -147,7 +147,7 @@ public:
 	*/
 	const bool								reconstruct_mode	= 0;// static_cast<bool>(seed % 2);
 
-	const std::uint8_t						rec_ui8_mode = 3;// seed % 4;
+	const std::uint8_t						rec_ui8_mode		= seed % 4;
 	const std::uint8_t						rec_ui16_mode		= seed % 3;
 	const std::uint8_t						rec_ui32_mode		= seed % 2;
 	const std::uint8_t						rec_ui64_mode		= rec_ui16_mode;
