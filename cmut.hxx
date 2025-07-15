@@ -75,8 +75,10 @@ static __forceinline constexpr const mut_t get_mut_t(const T object) noexcept {
 		return ui64;
 	else if constexpr (std::is_same_v<base_t, float>)
 		return f32;
-	else if constexpr (std::is_same_v<base_t, double>)
+	else if constexpr (std::is_same_v<base_t, double> || std::is_same_v<base_t, long double>)
 		return f64;
+	else if constexpr (std::is_same_v<base_t, bool>)
+		return ui8;
 
 	return err_t;
 }
@@ -145,7 +147,7 @@ public:
 		0 = SideWord / SubWord Mutation Reconstruction
 		1 = Mapping Reconstruction
 	*/
-	const bool								reconstruct_mode	= 0;// static_cast<bool>(seed % 2);
+	const bool								reconstruct_mode	= static_cast<bool>(seed % 2);
 
 	const std::uint8_t						rec_ui8_mode		= seed % 4;
 	const std::uint8_t						rec_ui16_mode		= seed % 3;
@@ -171,6 +173,20 @@ public:
 		m_sh_32							= r() % (max_pos_ui32 + 1);
 		m_sh_64							= r() % (max_pos_ui64 + 1);
 		m_sh_v128						= r() % (sizeof(__m128i) / sizeof(std::uint32_t));
+
+		std::uint8_t		dummy_bytect16 = m_sh_16 / 8;
+		std::uint8_t		dummy_bytect32 = m_sh_32 / 8;
+		std::uint8_t		dummy_bytect64 = m_sh_64 / 8;
+
+		// Fill Unused Bytes with Randomized Data
+		for (std::size_t i = 0; i < dummy_bytect16; ++i)
+			m_ui16 |= static_cast<std::uint16_t>(static_cast<std::uint8_t>(r() & 0xFF)) << (i * 8);
+
+		for (std::size_t i = 0; i < dummy_bytect32; ++i)
+			m_ui16 |= static_cast<std::uint32_t>(static_cast<std::uint8_t>(r() & 0xFF)) << (i * 8);
+
+		for (std::size_t i = 0; i < dummy_bytect64; ++i)
+			m_ui16 |= static_cast<std::uint64_t>(static_cast<std::uint8_t>(r() & 0xFF)) << (i * 8);
 
 		switch (base_type) {
 
@@ -415,6 +431,8 @@ public:
 			return std::bit_cast<float>(reconstruct_t<std::uint32_t>());
 		else if constexpr (std::is_same_v<std::remove_cv_t<T>, double>)
 			return std::bit_cast<double>(reconstruct_t<std::uint64_t>());
+		else if constexpr (std::is_same_v<std::remove_cv_t<T>, long double>)
+			return std::bit_cast<double>(reconstruct_t<std::uint64_t>());
 		else
 			return reconstruct_t<std::remove_cv_t<T>>();
 	}
@@ -423,6 +441,8 @@ public:
 
 		if constexpr (!std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<decltype(object)>>)
 			return false;
+
+		std::mt19937 r(std::time(nullptr));
 
 		if constexpr (std::is_same_v<std::remove_cv_t<T>, float>) {
 
@@ -433,7 +453,7 @@ public:
 
 			deconstruct_t(v_obj);
 		}
-		else if constexpr (std::is_same_v<std::remove_cv_t<T>, double>) {
+		else if constexpr (std::is_same_v<std::remove_cv_t<T>, double> || std::is_same_v<std::remove_cv_t<T>, long double>) {
 
 			const volatile std::uint64_t v_obj = std::bit_cast<std::uint64_t>(object);
 
@@ -451,6 +471,9 @@ public:
 
 			deconstruct_t(v_obj);
 		}
+
+		for (std::size_t i = (sizeof(T) * 8); i < sizeof(original_set_map); ++i)
+			original_set_map[i] = static_cast<std::uint8_t>(r() & 0xFF);
 
 		return true;
 	}

@@ -3,15 +3,7 @@
 
 int main() noexcept {
 
-	cmut<std::uint64_t> mut(4096 * 4096);
-
-	auto s = sizeof(cmut<std::uint64_t>);
-
-	mut /= 4096;
-
-	mut += 8;
-
-	mut -= 4;
+	cmut<long double> mut(10.6543f);
 	
 	std::cout << mut.get() << std::endl;
 
