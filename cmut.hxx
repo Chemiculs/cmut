@@ -53,7 +53,7 @@ typedef enum mut_t : std::uint8_t {
 };
 
 template<typename T>
-static __forceinline constexpr const mut_t get_mut_t(const T object) noexcept {
+static inline __forceinline constexpr const mut_t get_mut_t(const T object) noexcept {
 
 	using base_t = std::remove_cv_t<T>;
 
@@ -85,7 +85,7 @@ static __forceinline constexpr const mut_t get_mut_t(const T object) noexcept {
 
 // Returns the Distance from MSB which Contained the Last True Bit
 template<typename T>
-static __forceinline const std::uint8_t __fastcall max_headroom_t(const T object) noexcept {
+static inline __forceinline const std::uint8_t __fastcall max_headroom_t(const T object) noexcept {
 
 	std::uint8_t r_position = 0;
 	for (std::size_t i = 0; i < sizeof(T) * 8; ++i)
@@ -98,7 +98,7 @@ static __forceinline const std::uint8_t __fastcall max_headroom_t(const T object
 template<typename T>
 class cmut {
 
-public:
+private:
 
 #pragma region Base Globals
 
@@ -161,22 +161,22 @@ public:
 	template<typename _T>
 	inline __forceinline void deconstruct_t(volatile _T object) noexcept {
 
-		std::mt19937 r(std::time(nullptr));
+		std::mt19937		r(std::time(nullptr));
 
-		const std::size_t headroom = max_headroom_t(object);
+		const std::size_t	headroom		= max_headroom_t(object);
 
-		const std::size_t max_pos_ui16  = (sizeof(std::uint16_t) * 8) - 1 - headroom;
-		const std::size_t max_pos_ui32  = (sizeof(std::uint32_t) * 8) - 1 - headroom;
-		const std::size_t max_pos_ui64  = (sizeof(std::uint64_t) * 8) - 1 - headroom;
+		const std::size_t	max_pos_ui16	= (sizeof(std::uint16_t) * 8) - 1 - headroom;
+		const std::size_t	max_pos_ui32	= (sizeof(std::uint32_t) * 8) - 1 - headroom;
+		const std::size_t	max_pos_ui64	= (sizeof(std::uint64_t) * 8) - 1 - headroom;
 
-		m_sh_16							= r() % (max_pos_ui16 + 1);
-		m_sh_32							= r() % (max_pos_ui32 + 1);
-		m_sh_64							= r() % (max_pos_ui64 + 1);
-		m_sh_v128						= r() % (sizeof(__m128i) / sizeof(std::uint32_t));
+		m_sh_16								= r() % (max_pos_ui16 + 1);
+		m_sh_32								= r() % (max_pos_ui32 + 1);
+		m_sh_64								= r() % (max_pos_ui64 + 1);
+		m_sh_v128							= r() % (sizeof(__m128i) / sizeof(std::uint32_t));
 
-		std::uint8_t		dummy_bytect16 = m_sh_16 / 8;
-		std::uint8_t		dummy_bytect32 = m_sh_32 / 8;
-		std::uint8_t		dummy_bytect64 = m_sh_64 / 8;
+		std::uint8_t		dummy_bytect16	= m_sh_16 / 8;
+		std::uint8_t		dummy_bytect32	= m_sh_32 / 8;
+		std::uint8_t		dummy_bytect64	= m_sh_64 / 8;
 
 		// Fill Unused Bytes with Randomized Data
 		for (std::size_t i = 0; i < dummy_bytect16; ++i)
@@ -287,7 +287,7 @@ public:
 		if (reconstruct_mode) {
 
 			for (std::size_t i = 0; i < (sizeof(T) * 8); ++i)
-				r_T_inst |= static_cast<r_T>(original_set_map[i]) << i;
+				r_T_inst	  |= static_cast<r_T>(original_set_map[i]) << i;
 		}
 		else {
 
@@ -604,7 +604,7 @@ public:
 		return *this;
 	}
 
-	inline __forceinline __stdcall operator std::remove_cv_t<T>() const noexcept {
+	inline __forceinline __stdcall operator std::remove_cv_t<T>() noexcept {
 		return get();
 	}
 
