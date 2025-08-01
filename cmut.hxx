@@ -524,6 +524,8 @@ public:
 	// Operator overloads: Support arithmetic, bitwise, and assignment operations on the obfuscated value
 	__forceinline cmut(const T object = T(NULL)) noexcept : base_type(get_mut_t(object)) {
 
+		std::lock_guard<std::recursive_mutex> lock(cmut_mtx);
+
 		// C++ Mess Fixup. Fix the Standard Already - This Shouldn't be Necessary
 		is_ctor_lock = true;
 
@@ -758,7 +760,7 @@ public:
 		m_sh_v128 = NULL;
 		m_sh_v128_64 = NULL;
 
-		SECURE_ZERO_MEMORY(original_set_map, sizeof(original_set_map));
+		std::memset(original_set_map, 0x0u, sizeof(original_set_map));
 
 		m_ui16 = NULL;
 
@@ -767,8 +769,8 @@ public:
 
 		m_ui64 = NULL;
 		m_rsh_ui64 = NULL;
-		SECURE_ZERO_MEMORY(m_ui64_split16, sizeof(m_ui64_split16));
-		SECURE_ZERO_MEMORY(m_ui64_split32, sizeof(m_ui64_split32));
+		std::memset(m_ui64_split16,	 0x0u, sizeof(m_ui64_split16));
+		std::memset(m_ui64_split32,  0x0u, sizeof(m_ui64_split32));
 
 		m_v128 = _mm_setzero_si128();
 	}
